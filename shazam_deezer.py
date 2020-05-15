@@ -4,6 +4,32 @@ import pandas as pd
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 
+# Paste "codever" value after equal sign below in between "":
+codever = ""
+
+# Paste "inid" value after equal sign below in between "":
+inid = ""
+
+# Recreate the Cookie and create the headers for the requests
+cookie = 'geoip_country=FR; geoip_lat=46.196; geoip_long=6.240; codever=' + codever
+headers = {
+	'authority': 'www.shazam.com',
+	'dnt': '1',
+	'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36',
+	'content-type': 'application/json',
+	'accept': '*/*',
+	'sec-fetch-site': 'same-origin',
+	'sec-fetch-mode': 'cors',
+	'referer': 'https://www.shazam.com/myshazam',
+	'accept-encoding': 'gzip, deflate, br',
+	'accept-language': 'en-US,en;q=0.9,fr;q=0.8',
+	'cookie': cookie,
+	'if-none-match': 'W/^\^"2-mZFLkyvTelC5g8XnyQrpOw^\^"'
+	}
+
+# Create the URL for the request
+URL = "https://www.shazam.com/discovery/v4/en-US/FR/web/-/tag/" + inid + "?limit=50"
+
 # Initialize some values
 dict={}
 names={}
@@ -19,8 +45,7 @@ print("Getting the first 50 shazam tags")
 while(shaz_50 == []):
     try:
         print("Attempt number ", errcount)
-        # In line below, you need to get the cookie from shazam.com and enter it in place of %%%enter_token_here%%%
-        shaz_50 = requests.get('https://www.shazam.com/discovery/v4/en-US/FR/web/-/tag/4B60EA48-9196-41F1-855D-0288570F48EB?limit=50', headers = {'authority': 'www.shazam.com','dnt': '1','user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36','content-type': 'application/json','accept': '*/*','sec-fetch-site': 'same-origin','sec-fetch-mode': 'cors','referer': 'https://www.shazam.com/myshazam','accept-encoding': 'gzip, deflate, br','accept-language': 'en-US,en;q=0.9,fr;q=0.8','cookie': 'geoip_country=FR; geoip_lat=46.196; geoip_long=6.240; codever=a3b247dec11b3c23467173908f698326393fd59d76257e48359016bacebde8637833a793af52f46e874232332add153d066ae6b0e4add6a95275f3cbd0b8d6ae4b1d43847c376b1cea25f57f2d1c9b8fb94cd9307a0a69da98dad4ac1153d73359a98d1332d11ad80be108d9218bcaebd8c44e799f408de41ff2d7a8001d347e3b209807e39d4068d3c133bbcc4191481ccfc474105332d6c692','if-none-match': 'W/^\^"2-mZFLkyvTelC5g8XnyQrpOw^\^"'})
+        shaz_50 = requests.get(URL, headers = headers)
         shaz_50.raise_for_status()
     except requests.exceptions.HTTPError as err:
         errcount = errcount + 1
@@ -39,7 +64,7 @@ print("Success in decoding the JSON")
 
 # Ceck if there are new tagids - import previous ones, and compare with these:
 # Import previous tagids that contained all tagids back the csv file into an identical df
-previoustagids = pd.read_csv('/home/skier/Documents/scripts/jeffitomusicbot/jeffitomusicbot/files/shazam_tagid.csv', index_col=False, header=0)
+previoustagids = pd.read_csv('files/shazam_tagid.csv', index_col=False, header=0)
 
 # Get the 50 latest tagids
 shaz_50_tagids = pd.DataFrame(pd.DataFrame(shaz_50)['tags'].tolist())
@@ -62,17 +87,17 @@ else:
     alltagids = pd.concat([shaz_50_tagids.tagid, previoustagids.tagid]).drop_duplicates(keep="first")
 
     # Get previous shazam listy thingy
-    previous_df = pd.read_csv('/home/skier/Documents/scripts/jeffitomusicbot/jeffitomusicbot/files/shazam_df.csv', index_col=False, header=0)
+    previous_df = pd.read_csv('files/shazam_df.csv', index_col=False, header=0)
 
     #Turn the 50 latest tagids into pandas dataframes for the merging
     fifty_df = pd.DataFrame(pd.DataFrame(shaz_50)['tags'].tolist())
 
     # Create dataframes - new_df is a pandas dataframe with all shazam tags and save in a file for next use
     all_df = pd.concat([fifty_df, previous_df], ignore_index=True, sort=True).drop_duplicates('tagid').reset_index(drop=True)
-    all_df.to_csv('/home/skier/Documents/scripts/jeffitomusicbot/jeffitomusicbot/files/shazam_tagid.csv', index=False, header=1)
+    all_df.to_csv('files/shazam_tagid.csv', index=False, header=1)
 
     # Similaryl recreate a file with all tagids
-    all_df.tagid.to_csv('/home/skier/Documents/scripts/jeffitomusicbot/jeffitomusicbot/files/shazam_tagid.csv', index=False, header=1)
+    all_df.tagid.to_csv('files/shazam_tagid.csv', index=False, header=1)
 
     #Create newtagids which contains only the new tagids
     newtagids = pd.concat([pd.concat([shaz_50_tagids.tagid, previoustagids.tagid]).drop_duplicates(keep="first"), previoustagids.tagid]).drop_duplicates(keep=False)
@@ -143,7 +168,7 @@ else:
 #into a cron job to automate the process Below line is to compare 2 dataframces and keeping only the ones with differences df_diff = 
 #pd.concat([pd.DataFrame(shazam_df.tagid),pd.DataFrame(df2.tagid)]).drop_duplicates(keep=False)
 # Get specific tagid that is new df_diff.tagid[0] Below is to write every deezer link that needs to be downloaded
-    with open('/home/skier/Documents/scripts/jeffitomusicbot/jeffitomusicbot/files/list_to_download', 'w') as f:
+    with open('files/list_to_download', 'w') as f:
         for item in links:
             f.write("%s\n" % item)
 
@@ -153,7 +178,7 @@ else:
     no_links_list = list(no_links.values())
 
 # Then loop for the file
-    with open('/home/skier/Documents/scripts/jeffitomusicbot/jeffitomusicbot/files/list_cant_find_link', 'a') as g:
+    with open('files/list_cant_find_link', 'a') as g:
         for item in no_links_list:
             g.write("%s\n" % item)
 
