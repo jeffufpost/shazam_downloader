@@ -10,6 +10,8 @@ It uses  an (almost) never-expiring cookie from Shazam to list all of your Shaza
 
 ## Usage
 
+You will only need to do the following once since the cookie set by Shazam is used for many years
+
 * Go to https://www.shazam.com and log into your account
 * Open developper mode (Ctrl, Shift, C) and look at the cookie it created
 * Copy the values for "codever" and "inid"
