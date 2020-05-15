@@ -3,7 +3,9 @@
 ## About
 
 This script fetches the latest songs you have [Shazam'd'](https://www.shazam.com/) on your account and looks for links to those songs in Deezer.
+
 It uses  an (almost) never-expiring cookie from Shazam to list all of your Shazams, compares to a list of links it alread created, and only keeps the new songs you Shazam'd.  
+
 [Fuzzywuzzy](https://github.com/seatgeek/fuzzywuzzy) is used to match the name of songs and authors in Shazam to find the correct version of the song and its link on Deezer.
 
 ## Usage
